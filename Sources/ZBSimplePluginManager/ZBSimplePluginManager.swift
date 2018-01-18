@@ -31,6 +31,18 @@ public class ZBPlugin {
 	}
 }
 
+enum ZBSimplePluginManagerError: Error {
+	case overrideRegisterPluginAPI
+
+	var localizedDescription: String {
+		switch self {
+		case .overrideRegisterPluginAPI:
+			return NSLocalizedString("You cannot replace the \"registerPlugin\" function", comment: "error message")
+		}
+	}
+}
+
+/// ZBSimplePluginManager helps to load and manage JavaScript plug-ins.
 public class ZBSimplePluginManager {
 	/// All of the loaded plug-ins.
 	public private(set) var plugins = [ZBPlugin]()
@@ -43,7 +55,7 @@ public class ZBSimplePluginManager {
 
 	fileprivate var jsContext: JSContext = JSContext()
 	private var pluginFolderURL: URL
-	private var defaultsNameSpace: String
+	private var defaultsNamespace: String
 
 	/// Create an instance by given parameters.
 	///
@@ -52,40 +64,37 @@ public class ZBSimplePluginManager {
 	///   - defaultsNameSpace: A name space for setting user defaults.
 	public init(pluginFolderURL: URL, defaultsNameSpace: String = "plug-ins") {
 		self.pluginFolderURL = pluginFolderURL
-		self.defaultsNameSpace = defaultsNameSpace
+		self.defaultsNamespace = defaultsNameSpace
+		self.buildRegisterationAPI()
 		self.buildJavaScriptAPIs()
 	}
 
-	fileprivate func buildJavaScriptAPIs() {
-
-		// MARK: log
-		let logFunction: @convention (block) (String?) -> Void = { log in
-			if let log = log {
-				print(log)
-			}
+	/// Add new JavsScript function to the manager.
+	///
+	/// - Parameters:
+	///   - functionName: Name of the function.
+	///   - block: Implementation of the function.
+	///   - input: Input value of the function.
+	/// - Throws: Errors that cuase you cannot add new functions.
+	public func addJavaScriptAPI(functionName: String, block: @escaping (_ input: Any?) -> (Any?)) throws {
+		if functionName == "registerPlugin" {
+			throw ZBSimplePluginManagerError.overrideRegisterPluginAPI
 		}
-		self.jsContext.setObject(unsafeBitCast(logFunction, to: AnyObject.self), forKeyedSubscript: "log" as NSString)
-
-		// MARK: openURL
-		let openURL: @convention (block) (String?) -> Void = { urlString in
-			guard let urlString = urlString else {
-				return
-			}
-			guard let url = URL(string: urlString) else {
-				return
-			}
-#if os(iOS)
-			UIApplication.shared.open(url, options: [:], completionHandler: nil)
-#endif
-#if os(OSX)
-			NSWorkspace.shared.open(url)
-#endif
+		let objcBlock: @convention (block) (Any?) -> (Any?) = { input in
+			return block(input)
 		}
-		self.jsContext.setObject(unsafeBitCast(openURL, to: AnyObject.self), forKeyedSubscript: "openURL" as NSString)
+		self.jsContext.setObject(unsafeBitCast(objcBlock, to: AnyObject.self), forKeyedSubscript: functionName as NSString)
+	}
 
-		// MARK: registerAction
-		let registerPlugin: @convention (block) (JSValue!) -> Bool = { plugin in
-			guard let plugin = plugin else {
+	fileprivate func buildRegisterationAPI() {
+
+		func checkIfPluginEnabledInUserDefaults(pluginID: String) -> Bool {
+			let settingMap = UserDefaults.standard.dictionary(forKey: defaultsNamespace) as? [String: Bool] ?? [String: Bool]()
+			return settingMap[pluginID] ?? true
+		}
+
+		let registerPlugin: @convention (block) (JSValue?) -> Bool = { pluginJSObject in
+			guard let plugin = pluginJSObject else {
 				return false
 			}
 			guard let pluginID = plugin.forProperty("id").toString() else {
@@ -101,7 +110,7 @@ public class ZBSimplePluginManager {
 				return false
 			}
 			let action = plugin.forProperty("action")
-			let enabled = self.checkIfPluginEnabledInUserDefaults(pluginID: pluginID)
+			let enabled = checkIfPluginEnabledInUserDefaults(pluginID: pluginID)
 			let pluginItem = ZBPlugin(ID: pluginID, title: title, action: action, enabled: enabled)
 			self.plugins.append(pluginItem)
 			return true
@@ -109,10 +118,31 @@ public class ZBSimplePluginManager {
 		self.jsContext.setObject(unsafeBitCast(registerPlugin, to: AnyObject.self), forKeyedSubscript: "registerPlugin" as NSString)
 	}
 
-	func checkIfPluginEnabledInUserDefaults(pluginID: String) -> Bool {
-		let settingMap = UserDefaults.standard.dictionary(forKey: defaultsNameSpace) as? [String: Bool] ?? [String: Bool]()
-		return settingMap[pluginID] ?? true
+	fileprivate func buildJavaScriptAPIs() {
+		// MARK: log
+		try? self.addJavaScriptAPI(functionName: "log") { log in
+			if let log = log as? String {
+				print(log)
+			}
+			return nil
+		}
+
+		// MARK: openURL
+		try? self.addJavaScriptAPI(functionName:"openURL") { urlString in
+			guard let urlString = urlString as? String,
+				let url = URL(string:urlString) else {
+					return nil
+			}
+			#if os(iOS)
+				UIApplication.shared.open(url, options: [:], completionHandler:nil)
+			#endif
+			#if os(OSX)
+				NSWorkspace.shared.open(url)
+			#endif
+			return nil
+		}
 	}
+
 
 	/// Enable or disable a plugin.
 	///
@@ -121,19 +151,19 @@ public class ZBSimplePluginManager {
 	///   - enabled: Enabled or not.
 	public func toggle(plugin: ZBPlugin, enabled: Bool) {
 		plugin.enabled = enabled
-		var settingMap = UserDefaults.standard.dictionary(forKey: defaultsNameSpace) as? [String: Bool] ?? [String: Bool]()
+		var settingMap = UserDefaults.standard.dictionary(forKey: defaultsNamespace) as? [String: Bool] ?? [String: Bool]()
 		settingMap[plugin.title] = enabled
-		UserDefaults.standard.set(settingMap, forKey: self.defaultsNameSpace)
+		UserDefaults.standard.set(settingMap, forKey: self.defaultsNamespace)
 	}
 
 	/// Remove all plug-ins.
-	public func reset() {
+	public func resetPlugins() {
 		plugins.removeAll()
 	}
 
 	/// Load all plug-ins from the given folder path.
 	public func loadAllPlugins() {
-		self.reset()
+		self.resetPlugins()
 		let pluginFolder = self.pluginFolderURL.path
 		for path in FileManager.default.enumerator(atPath: pluginFolder)! {
 			let fullpath = (pluginFolder as NSString).appendingPathComponent(path as! String)
