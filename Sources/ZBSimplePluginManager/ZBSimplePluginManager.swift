@@ -26,6 +26,10 @@ public class ZBPlugin {
 		self.enabled = enabled
 	}
 
+	/// Call the action of the plugin.
+	///
+	/// - Parameter args: The arguments.
+	/// - Returns: The results.
 	public func call(args: [Any]) -> Any? {
 		return self.action?.call(withArguments: args)
 	}
@@ -57,6 +61,9 @@ public class ZBSimplePluginManager {
 	private var pluginFolderURL: URL
 	private var defaultsNamespace: String
 
+	/// A public property that helps to store values.
+	public var valueStorage:[String: Any] = [String: Any]()
+
 	/// Create an instance by given parameters.
 	///
 	/// - Parameters:
@@ -65,6 +72,7 @@ public class ZBSimplePluginManager {
 	public init(pluginFolderURL: URL, defaultsNameSpace: String = "plug-ins") {
 		self.pluginFolderURL = pluginFolderURL
 		self.defaultsNamespace = defaultsNameSpace
+		jsContext.name = "ZBSimplePluginManager"
 		self.buildRegisterationAPI()
 		self.buildJavaScriptAPIs()
 	}
@@ -82,6 +90,24 @@ public class ZBSimplePluginManager {
 		}
 		let objcBlock: @convention (block) (Any?) -> (Any?) = { input in
 			return block(input)
+		}
+		self.jsContext.setObject(unsafeBitCast(objcBlock, to: AnyObject.self), forKeyedSubscript: functionName as NSString)
+	}
+
+	/// Add new JavsScript function to the manager.
+	///
+	/// - Parameters:
+	///   - functionName: Name of the function.
+	///   - block: Implementation of the function.
+	///   - arg1: The first argument.
+	///   - arg2: The second argument.
+	/// - Throws: Errors that cuase you cannot add new functions.
+	public func addJavaScriptAPI(functionName: String, blockWithTwoArguments: @escaping (_ arg1: Any?, _ arg2: Any?) -> (Any?)) throws {
+		if functionName == "registerPlugin" {
+			throw ZBSimplePluginManagerError.overrideRegisterPluginAPI
+		}
+		let objcBlock: @convention (block) (Any?, Any?) -> (Any?) = { arg1, arg2 in
+			return blockWithTwoArguments(arg1, arg2)
 		}
 		self.jsContext.setObject(unsafeBitCast(objcBlock, to: AnyObject.self), forKeyedSubscript: functionName as NSString)
 	}
@@ -141,8 +167,22 @@ public class ZBSimplePluginManager {
 			#endif
 			return nil
 		}
-	}
 
+		try? self.addJavaScriptAPI(functionName:"set") { key, value in
+			guard let key = key as? String else {
+				return nil
+			}
+			self.valueStorage[key] = value
+			return nil
+		}
+
+		try? self.addJavaScriptAPI(functionName:"get") { key in
+			guard let key = key as? String else {
+				return nil
+			}
+			return self.valueStorage[key]
+		}
+	}
 
 	/// Enable or disable a plugin.
 	///
