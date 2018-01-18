@@ -1,4 +1,4 @@
-var youtubePlugin = {
+var kkboxPlugin = {
   id: 'plugin.google.search',
   title: 'Search in Google...',
   action: function (keyword) {
@@ -7,4 +7,4 @@ var youtubePlugin = {
   }
 }
 
-registerPlugin(youtubePlugin)
+registerPlugin(kkboxPlugin)

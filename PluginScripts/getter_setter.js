@@ -1,4 +1,4 @@
-var youtubePlugin = {
+var kkboxPlugin = {
   id: 'plugin.getter_setter',
   title: 'Getter/Setter',
   action: function (keyword) {
@@ -9,4 +9,4 @@ var youtubePlugin = {
   }
 }
 
-registerPlugin(youtubePlugin)
+registerPlugin(kkboxPlugin)

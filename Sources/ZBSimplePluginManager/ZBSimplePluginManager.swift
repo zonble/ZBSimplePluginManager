@@ -35,6 +35,11 @@ public class ZBPlugin {
 	}
 }
 
+extension Notification.Name {
+	static let pluginManagerDidLoadPlugins = Notification.Name("pluginManagerDidLoadPlugins")
+	static let pluginManagerDidResetPlugins = Notification.Name("pluginManagerDidLoadPlugins")
+}
+
 enum ZBSimplePluginManagerError: Error {
 	case overrideRegisterPluginAPI
 
@@ -199,16 +204,19 @@ public class ZBSimplePluginManager {
 	/// Remove all plug-ins.
 	public func resetPlugins() {
 		plugins.removeAll()
+		NotificationCenter.default.post(name: .pluginManagerDidResetPlugins, object: self)
 	}
 
 	/// Load all plug-ins from the given folder path.
 	public func loadAllPlugins() {
-		self.resetPlugins()
+		plugins.removeAll()
 		let pluginFolder = self.pluginFolderURL.path
 		for path in FileManager.default.enumerator(atPath: pluginFolder)! {
 			let fullpath = (pluginFolder as NSString).appendingPathComponent(path as! String)
 			_ = self.loadJavaScript(fileURL: URL(fileURLWithPath: fullpath))
 		}
+		plugins.sort { $0.title < $1.title }
+		NotificationCenter.default.post(name: .pluginManagerDidLoadPlugins, object: self)
 	}
 
 	/// Evaluate JavaScript code.
