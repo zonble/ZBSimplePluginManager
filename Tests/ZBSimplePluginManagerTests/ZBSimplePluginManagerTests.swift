@@ -19,6 +19,14 @@ class ZBSimplePluginManagerTests: XCTestCase {
 		XCTAssertTrue(manager.plugins.count > 0)
 	}
 
+	func testResetPlugin() {
+		let manager = createManager()
+		manager.loadAllPlugins()
+		XCTAssertTrue(manager.plugins.count > 0)
+		manager.resetPlugins()
+		XCTAssertTrue(manager.plugins.count == 0)
+	}
+
 	func testRegisterPlugin() {
 		let script =
 		"""
@@ -119,5 +127,11 @@ registerPlugin(getPlugin)
 
 	static var allTests = [
         ("testLoadPlugin", testLoadPlugin),
+		("testResetPlugin", testResetPlugin),
+		("testRegisterPlugin", testRegisterPlugin),
+		("testArray", testArray),
+		("testSet", testSet),
+		("testGet", testGet),
+		("testDisablePugin", testDisablePugin),
 	]
 }
