@@ -2,6 +2,10 @@
 
 A simple plug-in system by using JavaScriptCore.
 
+[![Support](https://img.shields.io/badge/macOS-10.10-blue.svg)](https://www.apple.com/tw/macos)&nbsp;
+[![Support](https://img.shields.io/badge/iOS-8-blue.svg)](https://www.apple.com/tw/ios)&nbsp;
+[![Support](https://img.shields.io/badge/tvOS-9-blue.svg)](https://www.apple.com/tw/tvos)&nbsp;
+
 Copyright (c) 2018 Weizhong Yang a.k.a zonble
 
 ## Introduction
@@ -17,9 +21,13 @@ Apple introduced JavaScriptCore framework, a JavaScript interpreter, in iOS 7. I
 ZBSimplePluginManager runs on iOS, macOS and tvOS.
 
 * Swift 4
-* iOS 8
-* macOS 10.10
-* tvOS 9
+* iOS 8 or above.
+* macOS 10.10 or above.
+* tvOS 9 or above.
+
+## Installation
+
+The SDK supports CocoaPods. Please add pod 'ZBSimplePluginManager' to your Podfile, and then call pod install.
 
 ## Usage
 
