@@ -1,9 +1,7 @@
-os:
-  - osx
 language: swift
 sudo: required
 dist: trusty
-osx_image: xcode9
+osx_image: xcode9.2
 script:
   - swift build
   - xcodebuild -scheme ZBSimplePluginManagerTests test
