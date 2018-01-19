@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>ZBSimplePluginManager  Reference</title>
+    <link rel="stylesheet" type="text/css" href="css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="css/highlight.css" />
+    <meta charset='utf-8'>
+    <script src="js/jquery.min.js" defer></script>
+    <script src="js/jazzy.js" defer></script>
+    
+  </head>
+  <body>
+    <a title="ZBSimplePluginManager  Reference"></a>
+    <header>
+      <div class="content-wrapper">
+        <p><a href="index.html">ZBSimplePluginManager Docs</a> (100% documented)</p>
+        <p class="header-right"><a href="https://github.com/zonbel/ZBSimplePluginManager"><img src="img/gh.png"/>View on GitHub</a></p>
+      </div>
+    </header>
+    <div class="content-wrapper">
+      <p id="breadcrumbs">
+        <a href="index.html">ZBSimplePluginManager Reference</a>
+        <img id="carat" src="img/carat.png" />
+        ZBSimplePluginManager  Reference
+      </p>
+    </div>
+    <div class="content-wrapper">
+      <nav class="sidebar">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a href="Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="Classes/ZBPlugin.html">ZBPlugin</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="Classes/ZBSimplePluginManager.html">ZBSimplePluginManager</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+        <section>
+          <section class="section">
+            
+            <h1 id='zbsimplepluginmanager' class='heading'>ZBSimplePluginManager</h1>
+
+<p>A simple plug-in system by using JavaScriptCore.</p>
+
+<p><a href="https://www.apple.com/tw/macos"><img src="https://img.shields.io/badge/macOS-10.10-blue.svg" alt="Support"></a>&nbsp;
+<a href="https://www.apple.com/tw/ios"><img src="https://img.shields.io/badge/iOS-8-blue.svg" alt="Support"></a>&nbsp;
+<a href="https://www.apple.com/tw/tvos"><img src="https://img.shields.io/badge/tvOS-9-blue.svg" alt="Support"></a>&nbsp;</p>
+
+<p>Copyright &copy; 2018 Weizhong Yang a.k.a zonble</p>
+<h2 id='introduction' class='heading'>Introduction</h2>
+
+<p>A plug-in system helps to make your app more flexible.</p>
+
+<p>Users may not need all of the functions in your app, and you may want to update the implementation of a function anytime. If you make these functions as plug-ins, users can enable or disable them when they need them or not, and you can let users to download new plug-ins if you hope so.</p>
+
+<p>Apple introduced JavaScriptCore framework, a JavaScript interpreter, in iOS 7. It is a great tool and we could leverage it to build a simple plug-in system in your app easily. It is also quite easy to write new plug-ins, since they are just simple JavaScript code.</p>
+<h2 id='requirement' class='heading'>Requirement</h2>
+
+<p>ZBSimplePluginManager runs on iOS, macOS and tvOS.</p>
+
+<ul>
+<li>Swift 4</li>
+<li>iOS 8 or above.</li>
+<li>macOS 10.10 or above.</li>
+<li>tvOS 9 or above.</li>
+</ul>
+<h2 id='installation' class='heading'>Installation</h2>
+
+<p>The SDK supports CocoaPods. Please add pod &lsquo;ZBSimplePluginManager&rsquo; to your Podfile, and then call pod install.</p>
+<h2 id='usage' class='heading'>Usage</h2>
+
+<p>Please create an instance of <em>ZBSimplePluginManager</em> by giving the folder where your plug-in files are, and a namespace for storing plug-in settings. A namespace here is a key that is used in NSUserDefaults to manage how a plug-in is enabled or disabled.</p>
+
+<p>Then, ask the manager to load all of the plug-ins in th given folder.</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">resourceURL</span> <span class="o">=</span> <span class="kt">URL</span><span class="p">(</span><span class="nv">fileURLWithPath</span><span class="p">:</span> <span class="kt">Bundle</span><span class="o">.</span><span class="n">main</span><span class="o">.</span><span class="n">resourcePath</span><span class="o">!</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">pluginFolder</span> <span class="o">=</span> <span class="n">resourceURL</span><span class="o">.</span><span class="nf">appendingPathComponent</span><span class="p">(</span><span class="s">"PluginScripts"</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">pluginManager</span> <span class="o">=</span> <span class="kt">ZBSimplePluginManager</span><span class="p">(</span><span class="nv">pluginFolderURL</span><span class="p">:</span> <span class="n">pluginFolder</span><span class="p">,</span> <span class="n">defaultsNameSpace</span><span class="p">:</span> <span class="s">"plugins"</span><span class="p">)</span>
+<span class="n">pluginManager</span><span class="p">?</span><span class="o">.</span><span class="nf">loadAllPlugins</span><span class="p">()</span>
+</code></pre>
+
+<p>Once the plug-ins are loaded, you can obtain a list of plug-ins from the manager.</p>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">plugins</span> <span class="o">=</span> <span class="n">pluginManager</span><span class="o">.</span><span class="n">plugins</span>
+</code></pre>
+
+<p>A plug-in that we defined in <em>ZBSimplePluginManager</em> has an identifier, a name and an action. You can call the action of a plug-in by passing specific parameters.</p>
+<pre class="highlight plaintext"><code>let plugins = pluginManager.plugins
+Let plugin = plugins[0]
+_ = plugin.call(args: ["Hello World!"])
+</code></pre>
+<h2 id='plug-in-files' class='heading'>Plug-in Files</h2>
+
+<p>A plug-in may looks like:</p>
+<pre class="highlight javascript"><code><span class="kd">var</span> <span class="nx">youtubePlugin</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="na">id</span><span class="p">:</span> <span class="s1">'plugin.google.search'</span><span class="p">,</span>
+  <span class="na">title</span><span class="p">:</span> <span class="s1">'Search in Google...'</span><span class="p">,</span>
+  <span class="na">action</span><span class="p">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">keyword</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">url</span> <span class="o">=</span> <span class="s1">'https://google.com/search?q='</span> <span class="o">+</span> <span class="nb">encodeURIComponent</span><span class="p">(</span><span class="nx">keyword</span><span class="p">)</span>
+    <span class="nx">openURL</span><span class="p">(</span><span class="nx">url</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nx">registerPlugin</span><span class="p">(</span><span class="nx">youtubePlugin</span><span class="p">)</span>
+</code></pre>
+
+<p>What the plug-in does is:</p>
+
+<ul>
+<li>Creating a JavaScript object with attributes including id, title, and action.</li>
+<li>Call <code>registerPlugin</code> by passing the object to register it.</li>
+</ul>
+
+<p>If there is already a plug-in registered with the same ID, you cannot register the plug-in.</p>
+<h2 id='javascript-apis' class='heading'>JavaScript APIs</h2>
+
+<p><em>ZBSimplePluginManager</em> has only a few APIs that you can call from your JavaScript code right now, but it is also easy to extend the APIs.</p>
+
+<ul>
+<li><code>registerPlugin</code>: Register a new plug-in.</li>
+<li><code>log</code>: Print debug messages.</li>
+<li><code>openURL</code>: Open a given URL.</li>
+</ul>
+
+<p><em>ZBSimplePluginManager</em> also provides a simple shared key/value storage in memory. You can use following functions to access it.</p>
+
+<ul>
+<li><code>set</code>: Set a value to the shared storage by giving a key.</li>
+<li><code>get</code>: Get a value by giving a key.</li>
+</ul>
+
+<p>You can add your own functions to be called by your JavaScript code by simply calling <code>addJavaScriptAPI(functionName:, block:)</code>. For example, if you want to replace the existing <code>log</code> function, you can do this in your code:</p>
+<pre class="highlight swift"><code><span class="k">try</span><span class="p">?</span> <span class="k">self</span><span class="o">.</span><span class="nf">addJavaScriptAPI</span><span class="p">(</span><span class="nv">functionName</span><span class="p">:</span> <span class="s">"log"</span><span class="p">)</span> <span class="p">{</span> <span class="n">log</span> <span class="k">in</span>
+  <span class="k">if</span> <span class="k">let</span> <span class="nv">log</span> <span class="o">=</span> <span class="n">log</span> <span class="k">as?</span> <span class="kt">String</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"[My Log]"</span> <span class="o">+</span> <span class="n">log</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="kc">nil</span>
+<span class="p">}</span>
+</code></pre>
+
+<p>The body of your custom function is a Swift closure that has a simple input value and returns a value. Type of both of input and output value is optional any (written in <q>Any?</q>). You can cast the value by your self to satisfy your needs. By the way, you cannot replace the &lsquo;registerPlugin&rsquo; function, otherwise we cannot register plug-ins.</p>
+
+<p>Enjoy!</p>
+
+          </section>
+        </section>
+        <section id="footer">
+          <p>&copy; 2018 <a class="link" href="https://zonble.net" target="_blank" rel="external">zonble</a>. All rights reserved. (Last updated: 2018-01-19)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.9.0</a>, a <a class="link" href="http://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+        </section>
+      </article>
+    </div>
+  </body>
+</div>
+</html>
