@@ -107,3 +107,8 @@ try? self.addJavaScriptAPI(functionName: "log") { log in
 The body of your custom function is a Swift closure that has a simple input value and returns a value. Type of both of input and output value is optional any (written in "Any?"). You can cast the value by your self to satisfy your needs. By the way, you cannot replace the 'registerPlugin' function, otherwise we cannot register plug-ins.
 
 Enjoy!
+
+## License
+
+ **LFLiveKit is released under the MIT license. See
+ [LICENSE](https://github.com/zonble/ZBSimplePluginManager/blob/master/LICENSE) for details.**

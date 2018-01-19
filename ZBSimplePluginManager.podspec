@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'ZBSimplePluginManager'
-  s.version          = '0.0.1'
+  s.version          = '0.0.2'
   s.summary          = 'A simple plug-in system by using JavaScriptCore.'
   s.description      = <<-DESC
   Apple introduced JavaScriptCore framework, a JavaScript interpreter, in iOS 7. 
@@ -13,6 +13,7 @@ Pod::Spec.new do |s|
   s.author           = { 'zonble' => 'zonble@gmail.com' }
   s.source           = { :git => 'https://github.com/zonble/ZBSimplePluginManager.git', :tag => s.version.to_s }
   s.social_media_url = 'https://twitter.com/zonble'
+  s.documentation_url = 'https://zonble.github.io/ZBSimplePluginManager/'
 
   s.ios.deployment_target = '8.0'
   s.osx.deployment_target = '10.10'
