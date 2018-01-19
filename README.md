@@ -12,6 +12,15 @@ Users may not need all of the functions in your app, and you may want to update 
 
 Apple introduced JavaScriptCore framework, a JavaScript interpreter, in iOS 7. It is a great tool and we could leverage it to build a simple plug-in system in your app easily. It is also quite easy to write new plug-ins, since they are just simple JavaScript code.
 
+## Requirement
+
+ZBSimplePluginManager runs on iOS, macOS and tvOS.
+
+* Swift 4
+* iOS 8
+* macOS 10.10
+* tvOS 9
+
 ## Usage
 
 Please create an instance of *ZBSimplePluginManager* by giving the folder where your plug-in files are, and a namespace for storing plug-in settings. A namespace here is a key that is used in NSUserDefaults to manage how a plug-in is enabled or disabled.
