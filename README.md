@@ -1,6 +1,8 @@
-# ZBSimplePuginManager
+# ZBSimplePluginManager
 
 A simple plug-in system by using JavaScriptCore.
+
+Copyright (c) 2018 Weizhong Yang a.k.a zonble
 
 ## Introduction
 
@@ -12,7 +14,7 @@ Apple introduced JavaScriptCore framework, a JavaScript interpreter, in iOS 7. I
 
 ## Usage
 
-Please create an instance of *ZBSimplePuginManager* by giving the folder where your plug-in files are, and a namespace for storing plug-in settings.
+Please create an instance of *ZBSimplePluginManager* by giving the folder where your plug-in files are, and a namespace for storing plug-in settings. A namespace here is a key that is used in NSUserDefaults to manage how a plug-in is enabled or disabled.
 
 Then, ask the manager to load all of the plug-ins in th given folder.
 
@@ -23,13 +25,13 @@ let pluginManager = ZBSimplePluginManager(pluginFolderURL: pluginFolder, default
 pluginManager?.loadAllPlugins()
 ```
 
-Once the plug-ins are loaded, you can obtaion a list of plug-ins from the manager.
+Once the plug-ins are loaded, you can obtain a list of plug-ins from the manager.
 
 ``` swift
 let plugins = pluginManager.plugins
 ```
 
-A plug-in that we defined in * ZBSimplePuginManager* has an identifier, a name and an action. You can call the action of a plug-in by passing specific parameters.
+A plug-in that we defined in *ZBSimplePluginManager* has an identifier, a name and an action. You can call the action of a plug-in by passing specific parameters.
 
 ```
 let plugins = pluginManager.plugins
@@ -63,12 +65,28 @@ If there is already a plug-in registered with the same ID, you cannot register t
 
 ## JavaScript APIs
 
-*ZBSimplePuginManager* has only a few APIs that you can call from your JavaScript code right now, but it is also easy to extend the APIs.
+*ZBSimplePluginManager* has only a few APIs that you can call from your JavaScript code right now, but it is also easy to extend the APIs.
 
-- `registerPlugin`: Register a new plug-in.
-- `log`: Print debug messages.
-- `openURL`: Open a given URL.
+* `registerPlugin`: Register a new plug-in.
+* `log`: Print debug messages.
+* `openURL`: Open a given URL.
 
-You can add your own functions to be called by your JavaScript code by calling `addJavaScriptAPI(functionName:, block:)`.
+*ZBSimplePluginManager* also provides a simple shared key/value storage in memory. You can use following functions to access it.
+
+* `set`: Set a value to the shared storage by giving a key.
+* `get`: Get a value by giving a key.
+
+You can add your own functions to be called by your JavaScript code by simply calling `addJavaScriptAPI(functionName:, block:)`. For example, if you want to replace the existing `log` function, you can do this in your code:
+
+``` swift
+try? self.addJavaScriptAPI(functionName: "log") { log in
+  if let log = log as? String {
+    print("[My Log]" + log)
+  }
+  return nil
+}
+```
+
+The body of your custom function is a Swift closure that has a simple input value and returns a value. Type of both of input and output value is optional any (written in "Any?"). You can cast the value by your self to satisfy your needs. By the way, you cannot replace the 'registerPlugin' function, otherwise we cannot register plug-ins.
 
 Enjoy!
