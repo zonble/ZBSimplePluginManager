@@ -8,7 +8,7 @@ import AppKit
 
 import JavaScriptCore
 
-/// A plug-in.
+/// A class that represents a plug-in.
 public class ZBPlugin {
 	/// ID of the plug-in.
 	public private(set) var ID: String
@@ -35,9 +35,15 @@ public class ZBPlugin {
 	}
 }
 
+// MARK: -
+
 extension Notification.Name {
+	/// A notification that is fired when a plug-in manager completes loading plug-ins.
 	static let pluginManagerDidLoadPlugins = Notification.Name("pluginManagerDidLoadPlugins")
+	/// A notification that is fired when a plug-in manager resets all plug-ins.
 	static let pluginManagerDidResetPlugins = Notification.Name("pluginManagerDidLoadPlugins")
+	/// A notification that is fired when a plug-in manager resets all settings.
+	static let pluginManagerDidResetSettings = Notification.Name("pluginManagerDidResetSettings")
 }
 
 enum ZBSimplePluginManagerError: Error {
@@ -51,15 +57,15 @@ enum ZBSimplePluginManagerError: Error {
 	}
 }
 
+// MARK: -
+
 /// ZBSimplePluginManager helps to load and manage JavaScript plug-ins.
 public class ZBSimplePluginManager {
 	/// All of the loaded plug-ins.
 	public private(set) var plugins = [ZBPlugin]()
 	/// A filtered list of enabled plug-ins.
 	public var enabledPlugins: [ZBPlugin] {
-		return self.plugins.filter { plugin in
-			plugin.enabled
-		}
+		return self.plugins.filter { $0.enabled }
 	}
 
 	fileprivate var jsContext: JSContext = JSContext()
@@ -69,37 +75,45 @@ public class ZBSimplePluginManager {
 	/// A public property that helps to store values.
 	public var valueStorage:[String: Any] = [String: Any]()
 
+	// MARK: -
+
 	/// Create an instance by given parameters.
 	///
 	/// - Parameters:
 	///   - pluginFolderURL: Where are the JavaScript plug-ins located at.
-	///   - defaultsNameSpace: A name space for setting user defaults.
-	public init(pluginFolderURL: URL, defaultsNameSpace: String = "plug-ins") {
+	///   - defaultsNamespace: A name space for setting user defaults.
+	public init(pluginFolderURL: URL, defaultsNamespace: String = "plug-ins") {
 		self.pluginFolderURL = pluginFolderURL
-		self.defaultsNamespace = defaultsNameSpace
+		self.defaultsNamespace = defaultsNamespace
 		jsContext.name = "ZBSimplePluginManager"
-		self.buildRegisterationAPI()
+		self.buildPluginRegisterationAPI()
 		self.buildJavaScriptAPIs()
 	}
 
+	// MARK: - Methods related with creating JavaScript APIs.
+
 	/// Add new JavsScript function to the manager.
+	///
+	/// Note: You cannot override the "registerPlugin" function.
 	///
 	/// - Parameters:
 	///   - functionName: Name of the function.
 	///   - block: Implementation of the function.
 	///   - input: Input value of the function.
 	/// - Throws: Errors that cuase you cannot add new functions.
-	public func addJavaScriptAPI(functionName: String, block: @escaping (_ input: Any?) -> (Any?)) throws {
+	public func addJavaScriptAPI(functionName: String, blockWithArgument: @escaping (_ input: Any?) -> (Any?)) throws {
 		if functionName == "registerPlugin" {
 			throw ZBSimplePluginManagerError.overrideRegisterPluginAPI
 		}
 		let objcBlock: @convention (block) (Any?) -> (Any?) = { input in
-			return block(input)
+			return blockWithArgument(input)
 		}
 		self.jsContext.setObject(unsafeBitCast(objcBlock, to: AnyObject.self), forKeyedSubscript: functionName as NSString)
 	}
 
 	/// Add new JavsScript function to the manager.
+	///
+	/// Note: You cannot override the "registerPlugin" function.
 	///
 	/// - Parameters:
 	///   - functionName: Name of the function.
@@ -117,7 +131,7 @@ public class ZBSimplePluginManager {
 		self.jsContext.setObject(unsafeBitCast(objcBlock, to: AnyObject.self), forKeyedSubscript: functionName as NSString)
 	}
 
-	fileprivate func buildRegisterationAPI() {
+	fileprivate func buildPluginRegisterationAPI() {
 
 		func checkIfPluginEnabledInUserDefaults(pluginID: String) -> Bool {
 			let settingMap = UserDefaults.standard.dictionary(forKey: defaultsNamespace) as? [String: Bool] ?? [String: Bool]()
@@ -125,10 +139,8 @@ public class ZBSimplePluginManager {
 		}
 
 		let registerPlugin: @convention (block) (JSValue?) -> Bool = { pluginJSObject in
-			guard let plugin = pluginJSObject else {
-				return false
-			}
-			guard let pluginID = plugin.forProperty("id").toString() else {
+			guard let pluginJSObject = pluginJSObject,
+				let pluginID = pluginJSObject.forProperty("id").toString() else {
 				return false
 			}
 			let exitingPluginIDs = self.plugins.map {
@@ -137,19 +149,20 @@ public class ZBSimplePluginManager {
 			if exitingPluginIDs.contains(pluginID) {
 				return false
 			}
-			guard let title = plugin.forProperty("title").toString() else {
+			guard let title = pluginJSObject.forProperty("title").toString() else {
 				return false
 			}
-			let action = plugin.forProperty("action")
+			let action = pluginJSObject.forProperty("action")
 			let enabled = checkIfPluginEnabledInUserDefaults(pluginID: pluginID)
-			let pluginItem = ZBPlugin(ID: pluginID, title: title, action: action, enabled: enabled)
-			self.plugins.append(pluginItem)
+			let plugin = ZBPlugin(ID: pluginID, title: title, action: action, enabled: enabled)
+			self.plugins.append(plugin)
 			return true
 		}
 		self.jsContext.setObject(unsafeBitCast(registerPlugin, to: AnyObject.self), forKeyedSubscript: "registerPlugin" as NSString)
 	}
 
 	fileprivate func buildJavaScriptAPIs() {
+
 		// MARK: log
 		try? self.addJavaScriptAPI(functionName: "log") { log in
 			if let log = log as? String {
@@ -165,14 +178,19 @@ public class ZBSimplePluginManager {
 					return nil
 			}
 			#if os(iOS)
+			if #available(iOS 10.0, *) {
 				UIApplication.shared.open(url, options: [:], completionHandler:nil)
+			} else {
+				UIApplication.shared.openURL(url)
+			}
 			#endif
 			#if os(OSX)
-				NSWorkspace.shared.open(url)
+			NSWorkspace.shared.open(url)
 			#endif
 			return nil
 		}
 
+		// MARK: set
 		try? self.addJavaScriptAPI(functionName:"set") { key, value in
 			guard let key = key as? String else {
 				return nil
@@ -181,12 +199,34 @@ public class ZBSimplePluginManager {
 			return nil
 		}
 
+		// MARK: get
 		try? self.addJavaScriptAPI(functionName:"get") { key in
 			guard let key = key as? String else {
 				return nil
 			}
 			return self.valueStorage[key]
 		}
+
+	}
+
+	// MARK: - Methods related with loading plug-ins.
+
+	/// Load all plug-ins from the given folder path.
+	public func loadAllPlugins() {
+		plugins.removeAll()
+		let pluginFolder = self.pluginFolderURL.path
+		for path in FileManager.default.enumerator(atPath: pluginFolder)! {
+			let fullpath = (pluginFolder as NSString).appendingPathComponent(path as! String)
+			_ = self.loadJavaScript(fileURL: URL(fileURLWithPath: fullpath))
+		}
+		plugins.sort { $0.title < $1.title }
+		NotificationCenter.default.post(name: .pluginManagerDidLoadPlugins, object: self)
+	}
+
+	/// Remove all plug-ins.
+	public func resetPlugins() {
+		plugins.removeAll()
+		NotificationCenter.default.post(name: .pluginManagerDidResetPlugins, object: self)
 	}
 
 	/// Enable or disable a plugin.
@@ -201,23 +241,16 @@ public class ZBSimplePluginManager {
 		UserDefaults.standard.set(settingMap, forKey: self.defaultsNamespace)
 	}
 
-	/// Remove all plug-ins.
-	public func resetPlugins() {
-		plugins.removeAll()
-		NotificationCenter.default.post(name: .pluginManagerDidResetPlugins, object: self)
+	/// Remove all of the plug-in enable/disable settings.
+	public func resetSettings() {
+		UserDefaults.standard.removeObject(forKey: self.defaultsNamespace)
+		for plugin in self.plugins {
+			plugin.enabled = true
+		}
+		NotificationCenter.default.post(name: .pluginManagerDidResetSettings, object: self)
 	}
 
-	/// Load all plug-ins from the given folder path.
-	public func loadAllPlugins() {
-		plugins.removeAll()
-		let pluginFolder = self.pluginFolderURL.path
-		for path in FileManager.default.enumerator(atPath: pluginFolder)! {
-			let fullpath = (pluginFolder as NSString).appendingPathComponent(path as! String)
-			_ = self.loadJavaScript(fileURL: URL(fileURLWithPath: fullpath))
-		}
-		plugins.sort { $0.title < $1.title }
-		NotificationCenter.default.post(name: .pluginManagerDidLoadPlugins, object: self)
-	}
+	// MARK: -
 
 	/// Evaluate JavaScript code.
 	///

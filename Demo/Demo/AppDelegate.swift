@@ -9,7 +9,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
 		let resourceURL = URL(fileURLWithPath: Bundle.main.resourcePath!)
 		let pluginFolder = resourceURL.appendingPathComponent("PluginScripts")
-		pluginManager = ZBSimplePluginManager(pluginFolderURL: pluginFolder, defaultsNameSpace: "plugins")
+		pluginManager = ZBSimplePluginManager(pluginFolderURL: pluginFolder, defaultsNamespace: "plugins")
 		pluginManager?.loadAllPlugins()
 		return true
 	}

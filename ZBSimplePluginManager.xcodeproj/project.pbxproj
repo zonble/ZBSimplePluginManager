@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		D4B63499201197A500588435 /* PluginScripts in CopyFiles */ = {isa = PBXBuildFile; fileRef = D4B634972011966800588435 /* PluginScripts */; };
 		OBJ_22 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
 		OBJ_28 /* ZBSimplePluginManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* ZBSimplePluginManagerTests.swift */; };
 		OBJ_30 /* ZBSimplePluginManager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "ZBSimplePluginManager::ZBSimplePluginManager::Product" /* ZBSimplePluginManager.framework */; };
@@ -44,7 +45,21 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		D4B634982011979C00588435 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				D4B63499201197A500588435 /* PluginScripts in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		D4B634972011966800588435 /* PluginScripts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PluginScripts; sourceTree = "<group>"; };
 		OBJ_12 /* ZBSimplePluginManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZBSimplePluginManagerTests.swift; sourceTree = "<group>"; };
 		OBJ_6 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		OBJ_9 /* ZBSimplePluginManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZBSimplePluginManager.swift; sourceTree = "<group>"; };
@@ -74,6 +89,7 @@
 		OBJ_10 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				D4B634972011966800588435 /* PluginScripts */,
 				OBJ_11 /* ZBSimplePluginManagerTests */,
 			);
 			name = Tests;
@@ -163,6 +179,7 @@
 			buildPhases = (
 				OBJ_27 /* Sources */,
 				OBJ_29 /* Frameworks */,
+				D4B634982011979C00588435 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -329,6 +346,7 @@
 				);
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = ZBSimplePluginManager.xcodeproj/ZBSimplePluginManager_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
 				OTHER_LDFLAGS = "$(inherited)";
 				OTHER_SWIFT_FLAGS = "$(inherited)";
@@ -351,6 +369,7 @@
 				);
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = ZBSimplePluginManager.xcodeproj/ZBSimplePluginManager_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
 				OTHER_LDFLAGS = "$(inherited)";
 				OTHER_SWIFT_FLAGS = "$(inherited)";
