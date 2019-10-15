@@ -8,6 +8,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Build
-        run: swift build
+        run: swift build -Xswiftc "-sdk" -Xswiftc "`xcrun --sdk iphonesimulator --show-sdk-path`" -Xswiftc "-target" -Xswiftc "x86_64-apple-ios12.1-simulator"
       - name: Test
-        run: swift test
+        run: xcodebuild -project ZBSimplePluginManager.xcodeproj -scheme ZBSimplePluginManagerTests test -destination 'platform=iOS Simulator,name=iPhone X,OS=12.4'

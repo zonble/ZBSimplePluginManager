@@ -141,7 +141,7 @@ public class ZBSimplePluginManager {
 		let registerPlugin: @convention (block) (JSValue?) -> Bool = { pluginJSObject in
 			guard let pluginJSObject = pluginJSObject,
 				let pluginID = pluginJSObject.forProperty("id").toString() else {
-				return false
+					return false
 			}
 			let exitingPluginIDs = self.plugins.map {
 				$0.ID
@@ -215,7 +215,11 @@ public class ZBSimplePluginManager {
 	public func loadAllPlugins() {
 		plugins.removeAll()
 		let pluginFolder = self.pluginFolderURL.path
-		for path in FileManager.default.enumerator(atPath: pluginFolder)! {
+		guard let enumerator = FileManager.default.enumerator(atPath: pluginFolder) else {
+			NotificationCenter.default.post(name: .pluginManagerDidLoadPlugins, object: self)
+			return
+		}
+		for path in enumerator {
 			let fullpath = (pluginFolder as NSString).appendingPathComponent(path as! String)
 			_ = self.loadJavaScript(fileURL: URL(fileURLWithPath: fullpath))
 		}
