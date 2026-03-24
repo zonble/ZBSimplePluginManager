@@ -5,6 +5,8 @@ jobs:
   build:
     name: Build
     runs-on: macos-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
       - name: Build
