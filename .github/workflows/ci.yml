@@ -1,13 +1,13 @@
 name: Build
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
     name: Build
-    runs-on: macOS-latest
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Build
-        run: swift build -Xswiftc "-sdk" -Xswiftc "`xcrun --sdk iphonesimulator --show-sdk-path`" -Xswiftc "-target" -Xswiftc "x86_64-apple-ios12.1-simulator"
+        run: swift build
       - name: Test
-        run: xcodebuild -project ZBSimplePluginManager.xcodeproj -scheme ZBSimplePluginManagerTests test -destination 'platform=iOS Simulator,name=iPhone X,OS=12.4'
+        run: xcodebuild -project ZBSimplePluginManager.xcodeproj -scheme ZBSimplePluginManagerTests test -destination 'platform=iOS Simulator,name=iPhone 16'
